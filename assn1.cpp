@@ -59,6 +59,36 @@ void myWait()
 	}
 }
 
+void myExec()
+{
+	char * args[2] = {"ls", NULL};
+	pid_t c_pid, pid;
+	int status;
+
+	c_pid = fork();
+	
+	if(c_pid < 0)
+	{
+		cout << "Fork Failed" << endl;
+		exit(1);
+	}
+	else if(c_pid == 0)
+	{
+		cout << "Child: executing ls" << endl;
+		execvp(args[0], args);
+		cout << "execve failed" << endl;
+	}
+	else if (c_pid > 0)
+	{
+		if((pid = wait(&status)) < 0)
+		{
+			cout << "Wait";
+			exit(1);
+		}
+		cout << "Parent: finished" << endl;
+	}
+}
+
 int main()
 {
 	string input = "";
@@ -68,7 +98,8 @@ int main()
 		//myFork();
 		cout << "$ ";
 		cin >> input;
-		myWait();
+		//myWait();
+		myExec();
 	}
 	return 0;
 }
