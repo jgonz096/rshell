@@ -5,6 +5,8 @@
 #include <stdlib.h>
 #include <sys/types.h>
 #include <sys/wait.h>
+#include <cstring>
+#include <vector>
 using namespace std;
 
 void myFork()
@@ -89,17 +91,70 @@ void myExec()
 	}
 }
 
-int main()
+void removeSpace(string &input)
+{
+	while((input[0] == ' ') || (input[0] == '\t'))
+	{
+		input.erase(input.begin());
+	}
+
+}
+
+void convertCommands(string &input, string &temp, int &loc, vector<string> &inputs)
+{
+	loc = input.find(";");
+	while(loc != string::npos)
+	{
+		//cout << "loc: " << loc << endl;
+		temp = input.substr(0,loc);
+		//cout << "temp: " << temp << endl;
+		input = input.substr(loc + 1);
+		removeSpace(input);
+		//cout << "input: " << input << endl;
+		inputs.push_back(temp);
+		loc = input.find(";");
+		//cout << temp << endl << input << endl;
+	}
+	if((!input.empty()) && (input != "exit"))
+	{
+		removeSpace(input);
+		temp = input;
+		input.clear();
+		inputs.push_back(temp);
+	}
+	if(input == "exit")
+	{
+		inputs.push_back(input);
+	}
+
+}
+
+void printVector(vector<string> &inputs)
+{
+	for(int i = 0; i < inputs.size(); i++)
+	{
+		cout << inputs.at(i) << endl;
+	}	
+}
+
+int main(int argc, char * argv[])
 {
 	string input = "";
+	string temp;
+	vector<string>inputs;
+	int loc;
 	//myFork();
 	while(input != "exit")
 	{
 		//myFork();
 		cout << "$ ";
-		cin >> input;
+		getline(cin, input);
+		removeSpace(input);
+		convertCommands(input,temp,loc,inputs);
 		//myWait();
-		myExec();
+		//myExec();
+		printVector(inputs);
+		inputs.clear();
 	}
 	return 0;
 }
