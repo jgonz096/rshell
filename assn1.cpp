@@ -61,8 +61,9 @@ void myWait()
 	}
 }
 
-void myExec()
+void myExec(vector<string> &inputs)
 {
+	
 	char * args[2] = {"ls", NULL};
 	pid_t c_pid, pid;
 	int status;
@@ -76,8 +77,16 @@ void myExec()
 	}
 	else if(c_pid == 0)
 	{
-		cout << "Child: executing ls" << endl;
-		execvp(args[0], args);
+		//cout << "Child: executing ls" << endl;
+		cout << "executing commands now master." << endl;
+		for(int i = 0; i < inputs.size(); i++)
+		{
+			//char *temp = new char [(inputs.at(i)).length() + 1];
+			//strcpy(temp, (inputs.at(i)).c_str());
+			execvp(args[0], args);
+			//execvp(*temp,temp);
+			//delete[] temp;
+		}
 		cout << "execve failed" << endl;
 	}
 	else if (c_pid > 0)
@@ -102,16 +111,17 @@ void removeSpace(string &input)
 
 void convertCommands(string &input, string &temp, int &loc, vector<string> &inputs)
 {
-	loc = input.find(";");
+        loc = input.find(";");
 	while(loc != string::npos)
 	{
 		//cout << "loc: " << loc << endl;
 		temp = input.substr(0,loc);
+		inputs.push_back(temp);
 		//cout << "temp: " << temp << endl;
 		input = input.substr(loc + 1);
 		removeSpace(input);
 		//cout << "input: " << input << endl;
-		inputs.push_back(temp);
+		//inputs.push_back(temp);
 		loc = input.find(";");
 		//cout << temp << endl << input << endl;
 	}
@@ -126,9 +136,66 @@ void convertCommands(string &input, string &temp, int &loc, vector<string> &inpu
 	{
 		inputs.push_back(input);
 	}
-
+	//for(int i = 0; i < inputs.size(); i++)
+	//{
+	//	if(inputs.at(i).find(' ') == string::npos
+	//}
 }
 
+vector<string> getCommands(vector<string>&inputs)
+{
+	int loc;
+	string temp;
+	vector<string> commands;
+	for(int i = 0; i < inputs.size(); i++)
+	{
+		temp = inputs.at(i);
+		loc = temp.find(' ');
+		if(loc != string::npos)
+		{
+			while(loc != string::npos)
+			{
+				commands.push_back(temp.substr(0,loc));
+				temp = temp.substr(loc + 1);
+				removeSpace(temp);
+				loc = temp.find(' ');
+			}
+			commands.push_back(temp);
+		}
+		else
+		{
+			commands.push_back(temp);
+		}
+	}
+	return commands;
+}
+vector<string> getCommands2(vector<string>&inputs)
+{
+	int loc;
+	string temp;
+	vector<string> commands;
+	for(int i = 0; i < inputs.size(); i++)
+	{
+		temp = inputs.at(i);
+		loc = temp.find('\t');
+		if(loc != string::npos)
+		{
+			while(loc != string::npos)
+			{
+				commands.push_back(temp.substr(0,loc));
+				temp = temp.substr(loc + 1);
+				removeSpace(temp);
+				loc = temp.find('\t');
+			}
+			commands.push_back(temp);
+		}
+		else
+		{
+			commands.push_back(temp);
+		}
+	}
+	return commands;
+}
 void printVector(vector<string> &inputs)
 {
 	for(int i = 0; i < inputs.size(); i++)
@@ -137,12 +204,20 @@ void printVector(vector<string> &inputs)
 	}	
 }
 
+
 int main(int argc, char * argv[])
 {
 	string input = "";
 	string temp;
 	vector<string>inputs;
+	vector<char**>commands;
 	int loc;
+
+	char *arr[inputs.size()];	
+
+
+
+
 	//myFork();
 	while(input != "exit")
 	{
@@ -153,6 +228,8 @@ int main(int argc, char * argv[])
 		convertCommands(input,temp,loc,inputs);
 		//myWait();
 		//myExec();
+		inputs = getCommands(inputs);
+		inputs = getCommands2(inputs);
 		printVector(inputs);
 		inputs.clear();
 	}
