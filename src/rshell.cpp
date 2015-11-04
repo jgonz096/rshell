@@ -191,6 +191,36 @@ void Rshell::clearArrayP(char* argv[][64])
 //      executes them
 void Rshell::executeCommand(char* argv[][64])
 {
+    pid_t pid;
+    int status;
+    bool conA = false;  //  '&&'
+    bool conB = false;  //  '||'
+    unsigned prev = 0;
+    bool success = false;   //  If connector succeeds
     
+    for(unsigned i = 0; argv[i][0] != '\0'; ++i)
+    {
+        if ((pid = fork()) < 0)
+        {
+            cout << "Error: forking child process failed\n";
+	    exit(1);
+        }
+        else if (pid == 0)
+        {
+	    if(execvp(*argv[i], argv[i]) < 0)
+	    {
+	        cout << "Error: exec failed\n";
+	        exit(1);
+	    }
+        }
+        else
+        {
+            while(wait(&status) != pid)
+	    {
+	        ;
+	    }
+        }
+    }
     return;
 }
+
